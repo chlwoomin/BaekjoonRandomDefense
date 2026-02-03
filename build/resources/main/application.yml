@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: baekjoon-random-defense
+  thymeleaf:
+    cache: false
+
+server:
+  port: 8080
+
+solved-ac:
+  api:
+    base-url: https://solved.ac/api/v3
+
+logging:
+  level:
+    com.baekjoon.randomdefense: DEBUG

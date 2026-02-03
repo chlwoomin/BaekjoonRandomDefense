@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>백준 랜덤 디펜스 PRO</title>
+    <!-- Pretendard Font -->
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <link rel="icon" href="data:,">
+</head>
+<body>
+    <div class="background-gradient"></div>
+
+    <!-- 상단 컨트롤 -->
+    <div class="top-controls">
+        <button id="shortcutInfoBtn" class="btn-icon" title="단축키" aria-label="단축키 안내">⌨️</button>
+        <button id="settingsBtn" class="btn-icon" title="설정" aria-label="설정">⚙️</button>
+        <button id="themeToggle" class="btn-icon" title="테마 변경" aria-label="테마 변경">☀️</button>
+    </div>
+
+    <div class="container">
+        <header>
+            <div class="logo-area">
+                <h1>BOJ Random Defense <span class="badge-pro">PRO</span></h1>
+                <p>나만의 알고리즘 트레이닝 센터</p>
+            </div>
+
+            <!-- 사용자 통계 바 -->
+            <div class="user-stats-bar">
+                <div class="stat-item" title="연속 해결 일수">
+                    <div class="stat-icon">🔥</div>
+                    <div class="stat-info">
+                        <span class="stat-label">Streak</span>
+                        <span class="stat-value" id="streakValue">0</span>
+                    </div>
+                </div>
+                <div class="stat-item" title="오늘 해결한 문제">
+                    <div class="stat-icon">✅</div>
+                    <div class="stat-info">
+                        <span class="stat-label">Today</span>
+                        <span class="stat-value" id="todaySolvedValue">0</span>
+                    </div>
+                </div>
+                <div class="stat-item" title="총 해결한 문제">
+                    <div class="stat-icon">🏆</div>
+                    <div class="stat-info">
+                        <span class="stat-label">Total</span>
+                        <span class="stat-value" id="totalSolvedValue">0</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main>
+            <form id="filter-form" class="filter-section glass-panel">
+                <div class="form-group">
+                    <label for="excludeUser">백준 아이디 (푼 문제 제외)</label>
+                    <input type="text" id="excludeUser" name="excludeUser" placeholder="Baekjoon ID">
+                </div>
+
+                <div class="form-group">
+                    <label>난이도 프리셋</label>
+                    <div class="preset-group">
+                        <button type="button" class="btn-preset bronze" data-tier="BRONZE">Bronze</button>
+                        <button type="button" class="btn-preset silver" data-tier="SILVER">Silver</button>
+                        <button type="button" class="btn-preset gold" data-tier="GOLD">Gold</button>
+                        <button type="button" class="btn-preset platinum" data-tier="PLATINUM">Platinum</button>
+                        <button type="button" class="btn-preset diamond" data-tier="DIAMOND">Diamond</button>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="minTier">최소 티어</label>
+                        <select id="minTier" name="minTier">
+                            <option th:each="tier : ${tiers}"
+                                    th:value="${tier.name()}"
+                                    th:text="${tier.displayName}"
+                                    th:style="'color: ' + ${tier.color}"
+                                    th:selected="${tier.name() == 'SILVER_5'}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="maxTier">최대 티어</label>
+                        <select id="maxTier" name="maxTier">
+                            <option th:each="tier : ${tiers}"
+                                    th:value="${tier.name()}"
+                                    th:text="${tier.displayName}"
+                                    th:style="'color: ' + ${tier.color}"
+                                    th:selected="${tier.name() == 'GOLD_1'}">
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>포함할 태그</label>
+                        <div class="tag-selector">
+                            <label th:each="tag : ${tags}" class="tag-checkbox">
+                                <input type="checkbox" name="tags" th:value="${tag.key}">
+                                <span th:text="${tag.displayName}">Tag</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>제외할 태그</label>
+                        <div class="tag-selector exclude-selector">
+                            <label th:each="tag : ${tags}" class="tag-checkbox exclude">
+                                <input type="checkbox" name="excludeTags" th:value="${tag.key}">
+                                <span th:text="${tag.displayName}">Tag</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" class="btn-primary" id="randomBtn">
+                    <span class="btn-text">랜덤 문제 받기</span>
+                    <span class="btn-shortcut">Space</span>
+                </button>
+            </form>
+
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <span>문제를 탐색 중입니다...</span>
+            </div>
+
+            <div id="problem-result" class="result-section">
+                <!-- Problem will be loaded here -->
+            </div>
+
+            <div id="error-message" class="error-message" style="display: none;">
+            </div>
+
+            <!-- 탭 메뉴 -->
+            <div class="bottom-tabs">
+                <button class="tab-btn active" data-tab="history">📜 히스토리</button>
+                <button class="tab-btn" data-tab="stats">📊 나의 통계</button>
+            </div>
+
+            <!-- 히스토리 섹션 -->
+            <div id="history-section" class="tab-content active">
+                <div class="history-header">
+                    <h3>최근 기록</h3>
+                    <button type="button" id="clearHistoryBtn" class="btn-text-danger">기록 삭제</button>
+                </div>
+                <div id="history-list" class="history-list">
+                    <!-- History items -->
+                </div>
+            </div>
+
+            <!-- 통계 섹션 -->
+            <div id="stats-section" class="tab-content" style="display: none;">
+                <div class="stats-container glass-panel">
+                    <h3>티어별 해결 분포</h3>
+                    <div id="tier-chart" class="tier-chart">
+                        <!-- CSS Bar Chart -->
+                    </div>
+                    <div class="stats-summary">
+                        <div class="summary-item">
+                            <span class="label">주력 티어</span>
+                            <span class="value" id="mostSolvedTier">-</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="label">총 해결</span>
+                            <span class="value" id="recentSolvedCount">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>Powered by <a href="https://solved.ac" target="_blank">solved.ac</a> API</p>
+        </footer>
+    </div>
+
+    <!-- 단축키 안내 모달 -->
+    <div id="shortcutModal" class="modal">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h3>키보드 단축키</h3>
+                <span class="close-modal">&times;</span>
+            </div>
+            <ul class="shortcut-list">
+                <li><span class="key">Space</span> 랜덤 문제 받기</li>
+                <li><span class="key">T</span> 타이머 일시정지/재개</li>
+                <li><span class="key">C</span> 문제 링크 복사</li>
+                <li><span class="key">M</span> 메모장 열기</li>
+                <li><span class="key">Esc</span> 팝업 닫기</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 설정 모달 -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h3>설정</h3>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="setting-item">
+                <label for="soundToggle">효과음 (해결 시)</label>
+                <label class="switch">
+                    <input type="checkbox" id="soundToggle" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <label for="confettiToggle">폭죽 효과</label>
+                <label class="switch">
+                    <input type="checkbox" id="confettiToggle" checked>
+                    <span class="slider round"></span>
+                </label>
+            </div>
+            <div class="setting-item danger-zone">
+                <button id="resetAllDataBtn" class="btn-danger">모든 데이터 초기화</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 폭죽 효과 캔버스 -->
+    <canvas id="confetti-canvas"></canvas>
+
+    <script th:src="@{/js/app.js}"></script>
+</body>
+</html>

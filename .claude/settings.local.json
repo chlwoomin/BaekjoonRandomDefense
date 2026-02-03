@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir:*)",
+      "Bash(powershell:*)",
+      "WebFetch(domain:solved.ac)",
+      "WebFetch(domain:solvedac.github.io)"
+    ]
+  }
+}

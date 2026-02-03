@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>백준 랜덤 디펜스</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>백준 랜덤 디펜스</h1>
+            <p>원하는 난이도와 알고리즘 태그로 랜덤 문제를 추천받으세요</p>
+        </header>
+
+        <main>
+            <form id="filter-form" class="filter-section">
+                <div class="form-group">
+                    <label for="excludeUser">백준 아이디 (선택)</label>
+                    <input type="text" id="excludeUser" name="excludeUser"
+                           placeholder="아이디를 입력하면 푼 문제가 제외됩니다">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="minTier">최소 티어</label>
+                        <select id="minTier" name="minTier">
+                            <option th:each="tier : ${tiers}"
+                                    th:value="${tier.name()}"
+                                    th:text="${tier.displayName}"
+                                    th:style="'color: ' + ${tier.color}"
+                                    th:selected="${tier.name() == 'SILVER_5'}">
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="maxTier">최대 티어</label>
+                        <select id="maxTier" name="maxTier">
+                            <option th:each="tier : ${tiers}"
+                                    th:value="${tier.name()}"
+                                    th:text="${tier.displayName}"
+                                    th:style="'color: ' + ${tier.color}"
+                                    th:selected="${tier.name() == 'GOLD_1'}">
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>알고리즘 태그 (선택)</label>
+                    <div class="tag-selector">
+                        <label th:each="tag : ${tags}" class="tag-checkbox">
+                            <input type="checkbox" name="tags" th:value="${tag.key}">
+                            <span th:text="${tag.displayName}">Tag</span>
+                        </label>
+                    </div>
+                </div>
+
+                <button type="button" class="btn-primary" id="randomBtn">
+                    랜덤 문제 받기
+                </button>
+            </form>
+
+            <div id="loading" class="loading" style="display: none;">
+                <div class="spinner"></div>
+                <span>문제를 찾고 있습니다...</span>
+            </div>
+
+            <div id="problem-result" class="result-section">
+                <!-- Problem will be loaded here -->
+            </div>
+
+            <div id="error-message" class="error-message" style="display: none;">
+            </div>
+        </main>
+
+        <footer>
+            <p>Powered by <a href="https://solved.ac" target="_blank">solved.ac</a> API</p>
+        </footer>
+    </div>
+
+    <script th:src="@{/js/app.js}"></script>
+</body>
+</html>
